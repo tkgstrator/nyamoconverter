@@ -1,63 +1,136 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <list>
+#include <cstddef>
 using namespace std;
 
-class Byaml
+namespace BymlFormat
 {
+    class Header
+    {
     public:
-        std::fstream file;
-        Byaml(std::string path)
+        uint32_t NodeNamesOffset;
+        uint32_t StringResOffset;
+        uint32_t RootOffset;
+        bool BigEndian = false;
+        uint16_t Version = 1;
+
+    public:
+        Header(std::byte data[])
         {
-            file.open(path, std::ios::in | std::ios::binary);
+            if (int(data[0]) == 0x59)
+                cout << "BigEndian" << endl;
+        }
+        Header()
+        {
+        }
+    };
+
+    class BymlFile
+    {
+    public:
+        Header header;
+        // StringTable NodeNames;
+        // StringTable StringRes;
+        // GenericNode RootNode;
+        bool BigEndian = false;
+        uint16_t Version = 1;
+        BymlFile(std::byte data[])
+        {
+            header = Header(data);
+            BigEndian = header.BigEndian;
+            Version = header.Version;
+        }
+    };
+
+    class StringTable
+    {
+        uint32_t* StringOffsets;
+        std::list<std::string> strings = std::list<std::string>();
+        bool IsNull = false;
+
+        std::string JapChars(std::byte input)
+        {
+            return "JP";
+        }
+
+        StringTable(uint32_t offset, std::byte data, bool BigEndian)
+        {
 
         }
-        int readU16(int);
-        int readU24();
-        int readU32();
-    private:
-};
 
-int Byaml::readU16(int index) {
-    char buf[16];
-    std::stringstream ss;
+        StringTable()
+        {
+        }
 
-    file.seekg(index, std::ios_base::cur);
-    file.read(buf, sizeof(buf));
-    cout << sizeof(buf) << endl;
-    for (int i = 0; i < sizeof(buf); i++)
-    {
-        cout << buf << " to " << hex << uppercase << int(buf[i]) << endl;
-        ss << std::hex << uppercase << int(buf[i]);
-    }
-    cout << ss.str() << endl;
-    return 0;
-}
+        StringTable(bool _isNull)
+        {
+            IsNull = _isNull;
+        }
 
-int Byaml::readU24() {
-    char buf[24];
-    file.read(buf, sizeof(buf));
+        std::string ReadNullTerminatedString()
+        {
+        }
 
-    return std::stoi(string(buf));
-}
+        std::byte CreateNullTerminatedString(std::string str)
+        {
+            std::list<std::byte> res = std::list<std::byte>();
+        }
 
-int Byaml::readU32() {
-    char buf[32];
-    file.read(buf, sizeof(buf));
+    };
 
-    return std::stoi(string(buf));
-}
+}; // namespace BymlFormat
 
+// std::string Byaml::readU16(int index)
+// {
+//     char buf[16];
+//     std::stringstream ss;
+
+//     file.seekg(index, std::ios_base::cur);
+//     file.read(buf, sizeof(buf));
+//     cout << sizeof(buf) << endl;
+//     for (int i = 0; i < sizeof(buf); i++)
+//     {
+//         ss << std::hex << uppercase << int((std::byte)buf[i]);
+//     }
+//     cout << ss.str() << endl;
+//     cout << __builtin_bswap16(stoi(ss.str())) << endl;
+//     return "0";
+// }
+
+// std::string Byaml::readU24(int offset)
+// {
+//     char buf[24];
+//     std::stringstream ss;
+
+//     file.seekg(offset, std::ios_base::cur);
+//     file.read(buf, sizeof(buf));
+//     cout << sizeof(buf) << endl;
+//     for (int i = 0; i < sizeof(buf); i++)
+//     {
+//         ss << std::hex << uppercase << int((std::byte)buf[i]);
+//     }
+//     return ss.str();
+// }
+
+// std::string Byaml::readU32(int offset)
+// {
+//     char buf[32];
+//     std::stringstream ss;
+
+//     file.seekg(offset, std::ios_base::cur);
+//     file.read(buf, sizeof(buf));
+//     cout << sizeof(buf) << endl;
+//     for (int i = 0; i < sizeof(buf); i++)
+//     {
+//         ss << std::hex << uppercase << int((std::byte)buf[i]);
+//     }
+//     return ss.str();
+// }
 
 int main()
 {
-    Byaml file = Byaml("0.byaml");
-    cout << file.readU16(4) << endl;
-    // if (!file.is_open())
-    // {
-    //     cout << "FILE OPEN ERROR" << endl;
-    //     return EXIT_FAILURE;
-    // }
 
     // while (!file.eof())
     // {
@@ -72,7 +145,7 @@ int main()
     //     {
     //         return EXIT_FAILURE;
     //     }
-    //     cout << "FILE SIZE : " << sizeof(file) <<  endl; 
+    //     cout << "FILE SIZE : " << sizeof(file) <<  endl;
     //     cout << "ENCRYPT VERSION : " << hex << int(buf[3]) << endl;
     //     cout << "HASH OFFSET : " << hex << int(buf[4]) << endl;
     //     cout << "TABLE OFFSET : " << hex << int(buf[8]) << endl;
