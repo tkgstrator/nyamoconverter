@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include "bymlformat.h"
+#include "byml.h"
 
 using namespace std;
 
@@ -54,7 +54,7 @@ using namespace std;
 
 int main()
 {
-
+    BymlFormat::BymlFile byml = BymlFormat::BymlFile();
     // while (!file.eof())
     // {
     //     file.read(buf, sizeof(buf));
